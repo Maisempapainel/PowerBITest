@@ -1,0 +1,29 @@
+name: Sincronizador Conta Azul Real-time
+
+on:
+  schedule:
+    # Agenda para rodar automaticamente a cada 10 minutos!
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Permite que você clique em "Iniciar Sincronização" de forma manual caso queira forçar na hora!
+
+jobs:
+  executar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixando repositório
+        uses: actions/checkout@v3
+
+      - name: Instalando ambiente Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalando dependências
+        run: pip install requests psycopg2-binary
+
+      - name: Rodando sincronizador do Conta Azul
+        env:
+          CONTAAZUL_CLIENT_ID: ${{ secrets.CONTAAZUL_CLIENT_ID }}
+          CONTAAZUL_CLIENT_SECRET: ${{ secrets.CONTAAZUL_CLIENT_SECRET }}
+          SUPABASE_DATABASE_URI: ${{ secrets.SUPABASE_DATABASE_URI }}
+        run: python sincronizador.py
