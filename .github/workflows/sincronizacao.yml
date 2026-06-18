@@ -1,29 +1,36 @@
-name: Sincronizador Conta Azul Real-time
+# .github/workflows/sincronizacao.yml
+name: Integrador Conta Azul Real-time
 
 on:
   schedule:
-    # Agenda para rodar automaticamente a cada 10 minutos!
+    # Executa a cada 10 minutos (Cron gratuito do GitHub)
     - cron: '*/10 * * * *'
-  workflow_dispatch: # Permite que você clique em "Iniciar Sincronização" de forma manual caso queira forçar na hora!
+  
+  # Cria um botão verde de "Play" para você forçar a execução no painel do GitHub na hora que desejar!
+  workflow_dispatch:
 
 jobs:
-  executar:
+  run-sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Baixando repositório
+      - name: Baixar código do repositório
         uses: actions/checkout@v3
 
-      - name: Instalando ambiente Python
+      - name: Instalar Python no Servidor do GitHub
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Instalando dependências
-        run: pip install requests psycopg2-binary
+      - name: Instalar dependências da API do Supabase e Conta Azul
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests supabase
 
-      - name: Rodando sincronizador do Conta Azul
+      - name: Rodar script de atualização em tempo real
         env:
+          # Segredos guardados de forma forte nos segredos do próprio GitHub
           CONTAAZUL_CLIENT_ID: ${{ secrets.CONTAAZUL_CLIENT_ID }}
           CONTAAZUL_CLIENT_SECRET: ${{ secrets.CONTAAZUL_CLIENT_SECRET }}
-          SUPABASE_DATABASE_URI: ${{ secrets.SUPABASE_DATABASE_URI }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: python sincronizador.py
